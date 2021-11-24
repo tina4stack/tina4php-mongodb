@@ -1,0 +1,4 @@
+/.idea/
+/tests/junit.xml
+/vendor/
+/tina4php-mongodb.iml
