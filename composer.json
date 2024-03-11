@@ -23,6 +23,7 @@
   },
   "require": {
     "tina4stack/tina4php-database": "^2.0",
-    "ext-mongodb" : "*"
+    "ext-mongodb" : "*",
+    "mongodb/mongodb": "^1.17"
   }
 }
