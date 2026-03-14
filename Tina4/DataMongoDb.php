@@ -40,24 +40,23 @@ class DataMongoDb implements DataBase
 
     /**
      * Return a camel cased version of the name
+     * Delegates to the canonical implementation in \Tina4\Utilities (tina4php-core)
      * @param string $name A field name or object name with underscores
      * @return string Camel case version of the input
+     * @see \Tina4\Utility::camelCase()
      */
     public function camelCase(string $name): string
     {
-        $fieldName = "";
-        $name = strtolower($name);
-        for ($i = 0, $iMax = strlen($name); $i < $iMax; $i++) {
-            if ($name[$i] === "_") {
-                $i++;
-                if ($i < strlen($name)) {
-                    $fieldName .= strtoupper($name[$i]);
-                }
-            } else {
-                $fieldName .= $name[$i];
-            }
+        if (class_exists('\Tina4\Utilities')) {
+            return (new \Tina4\Utilities())->camelCase($name);
         }
-        return $fieldName;
+
+        // Fallback for standalone usage without tina4php-core
+        if (strpos($name, '_')) {
+            $name = str_replace('_', ' ', strtolower($name));
+        }
+
+        return lcfirst(str_replace(' ', '', ucwords($name)));
     }
 
     /**
