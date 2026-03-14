@@ -2,3 +2,7 @@
 /tests/junit.xml
 /vendor/
 /tina4php-mongodb.iml
+.phpunit.result.cache
+.phpunit.cache
+.claude/
+/metrics/

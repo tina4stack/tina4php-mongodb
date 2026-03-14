@@ -8,170 +8,34 @@
 namespace Tina4;
 
 /**
- * The Mongodb database implementation
+ * The MongoDB database implementation
  * @package Tina4
  */
-class DataMongoDb implements Database
+class DataMongoDb implements DataBase
 {
     use DataBaseCore;
-
-    private $manager;
-
-    public function open()
-    {
-        if (!class_exists("MongoDB\Client")) {
-            throw new \Exception("MongoDb extension for PHP needs to be installed");
-        }
-
-        if (empty($this->hostName))
-        {
-            $this->hostName = "localhost";
-        }
-
-        if (empty($this->port))
-        {
-            $this->port = $this->getDefaultDatabasePort();
-        }
-
-        if (empty($this->databaseName))
-        {
-            $this->databaseName = "testing";
-        }
-
-        $connectionString = "mongodb://" . $this->hostName . ":" . $this->port;
-        if (!empty($this->username)) {
-            $connectionString = "mongodb://{$this->username}:{$this->password}@" . $this->hostName . ":" . $this->port;
-        }
-
-        $this->dbh = (new \MongoDB\Client($connectionString))->{$this->databaseName};
-
-        $this->manager = new \MongoDB\Driver\Manager($connectionString);
-    }
-
-    public function close()
-    {
-        unset($this->dbh);
-    }
-
-    public function exec()
-    {
-        $params = $this->parseParams(func_get_args());
-        $params = $params["params"];
-        $sql = $params[0];
-        $statement = (new NoSQLParser())->parseSQLToNoSQL($sql);
-
-        $data = [];
-        foreach ($statement["columns"] as $id => $column) {
-            $data[$this->camelCase($column)] = $params[$id+1];
-        }
-
-        if (strpos($sql, "update") !== false) {
-            foreach ($this->dbh->{$statement["collectionName"]}->find($statement["filter"]) as $document) {
-                $this->dbh->{$statement["collectionName"]}->findOneAndUpdate($statement["filter"], ['$set' => $data]);
-            }
-        } else {
-            $this->dbh->{$statement["collectionName"]}->insertOne($data);
-        }
-
-        return $this->error();
-    }
-
-    final public function getLastId(): string
-    {
-       return 0;
-    }
-
-    final public function tableExists(string $tableName): bool
-    {
-        $collections = new \MongoDB\Command\ListCollections($this->databaseName);
-
-        $collectionNames = [];
-
-        foreach ($collections as $collection) {
-            $collectionNames[] = $collection->getName();
-        }
-
-        return in_array($tableName, $collectionNames);
-    }
-
-    final public function fetch($sql = "", int $noOfRecords = 10, int $offSet = 0, array $fieldMapping = []): DataResult
-    {
-        $statement = (new NoSQLParser())->parseSQLToNoSQL($sql);
-
-        $collection = $this->dbh->{$statement["collectionName"]}->find($statement["filter"]);
-
-        $countRecords = 0;
-
-        $records = [];
-
-        if (!empty($collection)) {
-            foreach ($collection as  $document) {
-                if (!empty($document)) {
-
-                    $records[] = (new DataRecord((array)$document, $fieldMapping, $this->getDefaultDatabaseDateFormat(), $this->dateFormat));
-                    $countRecords++;
-                }
-            }
-        }
-
-        $error = $this->error();
-
-        return (new DataResult($records, $fields=[], $countRecords, $offSet, $error));
-    }
-
-    final public function autoCommit(bool $onState = true): void
-    {
-        // TODO: Implement autoCommit() method.
-    }
-
-    final public function startTransaction()
-    {
-        // TODO: Implement startTransaction() method.
-    }
-
-    final public function error()
-    {
-        return (new DataError("", ""));
-    }
-
-    final public function getDatabase(): array
-    {
-        // TODO: Implement getDatabase() method.
-    }
-
-    final public function getDefaultDatabaseDateFormat(): string
-    {
-        return "Y-m-d";
-    }
-
-    final public function getDefaultDatabasePort(): int
-    {
-        return 27017;
-    }
-
-    final public function getQueryParam(string $fieldName, int $fieldIndex): string
-    {
-        return ":{$fieldName}";
-    }
-
-    final public function commit($transactionId = null)
-    {
-        // TODO: Implement commit() method.
-    }
-
-
-    final public function rollback($transactionId = null)
-    {
-        // TODO: Implement rollback() method.
-    }
+    use MongoDbConnection;
+    use MongoDbExec;
+    use MongoDbMetaData;
+    use MongoDbQuery;
 
     /**
-     * Is it a No SQL database?
-     * @return bool
+     * @var string Last inserted ID
      */
-    final public function isNoSQL(): bool
+    private string $lastId = "";
+
+    /**
+     * @var DataError Last error from database operations
+     */
+    private DataError $lastError;
+
+    /**
+     * Returns the last id after an insert
+     * @return string
+     */
+    final public function getLastId(): string
     {
-        return true;
+        return $this->lastId;
     }
 
     /**
@@ -197,11 +61,49 @@ class DataMongoDb implements Database
     }
 
     /**
+     * The default date format for this database type
+     * @return string
+     */
+    final public function getDefaultDatabaseDateFormat(): string
+    {
+        return "Y-m-d";
+    }
+
+    /**
+     * The default MongoDB port
+     * @return int
+     */
+    final public function getDefaultDatabasePort(): int
+    {
+        return 27017;
+    }
+
+    /**
+     * Gets the query parameter format
+     * @param string $fieldName
+     * @param int $fieldIndex
+     * @return string
+     */
+    final public function getQueryParam(string $fieldName, int $fieldIndex): string
+    {
+        return ":{$fieldName}";
+    }
+
+    /**
      * Get a short name for the database used for specific database migrations
      * @return string
      */
     final public function getShortName(): string
     {
         return "mongodb";
+    }
+
+    /**
+     * Is it a No SQL database?
+     * @return bool
+     */
+    final public function isNoSQL(): bool
+    {
+        return true;
     }
 }

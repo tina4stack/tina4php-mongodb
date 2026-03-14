@@ -509,16 +509,16 @@
         },
         {
             "name": "tina4stack/tina4php-database",
-            "version": "v2.0.13",
+            "version": "v2.0.14",
             "source": {
                 "type": "git",
                 "url": "https://github.com/tina4stack/tina4php-database.git",
-                "reference": "d64de624a4b7d1eec92c12e5217bfadd0c747771"
+                "reference": "0829df714e251b2eb59c4d62a84487a42967e64f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tina4stack/tina4php-database/zipball/d64de624a4b7d1eec92c12e5217bfadd0c747771",
-                "reference": "d64de624a4b7d1eec92c12e5217bfadd0c747771",
+                "url": "https://api.github.com/repos/tina4stack/tina4php-database/zipball/0829df714e251b2eb59c4d62a84487a42967e64f",
+                "reference": "0829df714e251b2eb59c4d62a84487a42967e64f",
                 "shasum": ""
             },
             "require": {
@@ -559,9 +559,9 @@
             "description": "Tina4 PHP Database Module",
             "support": {
                 "issues": "https://github.com/tina4stack/tina4php-database/issues",
-                "source": "https://github.com/tina4stack/tina4php-database/tree/v2.0.13"
+                "source": "https://github.com/tina4stack/tina4php-database/tree/v2.0.14"
             },
-            "time": "2023-08-29T06:25:47+00:00"
+            "time": "2024-03-11T16:27:53+00:00"
         },
         {
             "name": "tina4stack/tina4php-debug",
